@@ -17,7 +17,40 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  AnimationController _animationController;
+  Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(
+        seconds: 2,
+      ),
+    );
+
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.fastOutSlowIn,
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _animationController.reverse();
+        } else if (status == AnimationStatus.dismissed) {
+          _animationController.forward();
+        }
+      });
+
+    _animationController.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -45,8 +78,10 @@ class MyHomePage extends StatelessWidget {
                 Container(
                   height: MediaQuery.of(context).size.height * 0.2,
                   width: MediaQuery.of(context).size.width * 0.33,
-                  child:
-                      Image.asset('assets/beyond_logo.png', fit: BoxFit.fill),
+                  child: FadeTransition(
+                      opacity: _animation,
+                      child: Image.asset('assets/beyond_logo.png',
+                          fit: BoxFit.fill)),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -77,5 +112,11 @@ class MyHomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 }
